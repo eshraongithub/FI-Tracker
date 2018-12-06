@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Account History
+{% endblock %}
+
+{% block main %}
+    <form action="/history" method="post">
+        <table class="table table-hover">
+            <tr class="table-info">
+                <th>Date</th>
+                <th>Account</th>
+                <th>Value</th>
+                <th>Remove</th>
+            </tr>
+            {% for row in userhistory %}
+            <tr id="{{row['id']}}">
+                <td>{{ row['date'] }}</td>
+                <td>{{ row['name'] }}</td>
+                <td>{{ row['value'] }}</td>
+                <td>
+                    <input name="{{row['id']}}"type="checkbox" autocomplete="off">
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="form-group">
+            <button class="btn btn-danger" type="submit">Delete Selected Entries</button>
+        </div>
+    </form>
+{% endblock %}
