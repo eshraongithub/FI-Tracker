@@ -83,13 +83,34 @@ def add():
     return redirect("/accounts")
 
 
-@app.route("/history")
+@app.route("/history", methods=["GET", "POST"])
 @login_required
 def history():
     """Show history of transactions"""
-    user_id = session['user_id']
-    rows = db.execute("SELECT * FROM history WHERE userID = :user_id", user_id=user_id)
-    return render_template("history.html", rows=rows)
+    if request.method == "POST":
+        user_id = session['user_id']
+        history = db.execute("SELECT * FROM history WHERE userid=:user_id", user_id=user_id)
+        for row in history:
+            if request.form.get(str(row['id'])) == "on":
+                db.execute("DELETE FROM history WHERE id=:accid", accid=row['id'])
+
+        # Keep this for future use. Prints all data from html form
+        # my_data = request.form
+        # for key in my_data:
+        #     print ('form key '+key+" "+my_data[key])
+        # return render_template("history.html")
+
+        userhistory = db.execute(
+            "SELECT history.date, accounts.name, history.value, history.id FROM history INNER JOIN accounts " +
+            "ON history.accountid=accounts.id WHERE history.userid=:user_id", user_id=user_id)
+        return render_template("history.html", userhistory=userhistory)
+
+    else:
+        user_id = session['user_id']
+        userhistory = db.execute(
+            "SELECT history.date, accounts.name, history.value, history.id FROM history INNER JOIN accounts " +
+            "ON history.accountid=accounts.id WHERE history.userid=:user_id", user_id=user_id)
+        return render_template("history.html", userhistory=userhistory)
 
 
 @app.route("/login", methods=["GET", "POST"])
