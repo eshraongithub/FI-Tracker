@@ -1,0 +1,25 @@
+<!-- https://www.tutorialspoint.com/How-to-load-external-HTML-into-a-div-using-jQuery -->
+
+{% extends "layout.html" %}
+
+{% block title %}
+    Reports
+{% endblock %}
+
+{% block main %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function(){
+
+           $('#content').load("plot");
+
+        });
+    </script>
+
+    <h3>Reports and Analysis</h3>
+
+    <div id="content">Loading Graph...</div>
+
+<!--<iframe width="45%" height="400" frameborder="0" scrolling="no" link=false modebar=false src="//plot.ly/~kynowyn/2.embed"></iframe> -->
+
+{% endblock %}

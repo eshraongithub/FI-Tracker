@@ -7,7 +7,11 @@
 {% endblock %}
 
 {% block main %}
-    <h2>{{ user[0]['username'] }}'s Net Worth</h2>
+    {% if user[0]['realname'] == NULL %}
+        <h2>{{ user[0]['username'] }}'s Net Worth</h2>
+    {% else %}
+        <h2>{{ user[0]['realname'] }}'s Net Worth</h2>
+    {% endif %}
     <table class="table table-hover">
         <tr class="table-info">
             <th>Account</th>
@@ -39,7 +43,7 @@
         <tr class="table-danger">
             <td>Net Worth</td>
             <td></td>
-            <td>-${{ total * -1}}</td>
+            <td>-${{ "{:,.2f}".format(total * -1)}}</td>
         </tr>
         {% endif %}
 

@@ -17,7 +17,11 @@
             <tr id="{{row['id']}}">
                 <td>{{ row['date'] }}</td>
                 <td>{{ row['name'] }}</td>
-                <td>{{ row['value'] }}</td>
+                {% if row['value'] > 0 %}
+                    <td>${{ "{:,.2f}".format(row['value']) }}</td>
+                {% else %}
+                    <td>-${{ "{:,.2f}".format(row['value'] * -1) }}</td></td>
+                {% endif %}
                 <td>
                     <input name="{{row['id']}}"type="checkbox" autocomplete="off">
                 </td>

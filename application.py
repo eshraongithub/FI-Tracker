@@ -3,6 +3,8 @@ import os
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
+import plotly as py
+import plotly.graph_objs as go
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -79,7 +81,9 @@ def add():
 
     newaccount = db.execute('SELECT * FROM accounts WHERE userid = :user_id AND name = :name', user_id=user_id, name=name)
 
-    db.execute('INSERT INTO "history" ("accountid","value") VALUES (:accountid, :value)', accountid=newaccount[0]['id'], value=value)
+    db.execute(
+        'INSERT INTO "history" ("accountid","value","userid") ' +
+        'VALUES (:accountid, :value, :user_id)', accountid=newaccount[0]['id'], value=value, user_id=user_id)
     return redirect("/accounts")
 
 
@@ -102,14 +106,14 @@ def history():
 
         userhistory = db.execute(
             "SELECT history.date, accounts.name, history.value, history.id FROM history INNER JOIN accounts " +
-            "ON history.accountid=accounts.id WHERE history.userid=:user_id", user_id=user_id)
+            "ON history.accountid=accounts.id WHERE history.userid=:user_id ORDER BY date DESC", user_id=user_id)
         return render_template("history.html", userhistory=userhistory)
 
     else:
         user_id = session['user_id']
         userhistory = db.execute(
             "SELECT history.date, accounts.name, history.value, history.id FROM history INNER JOIN accounts " +
-            "ON history.accountid=accounts.id WHERE history.userid=:user_id", user_id=user_id)
+            "ON history.accountid=accounts.id WHERE history.userid=:user_id ORDER BY date DESC", user_id=user_id)
         return render_template("history.html", userhistory=userhistory)
 
 
@@ -191,8 +195,9 @@ def register():
         name = request.form.get("username")
         password = request.form.get("password")
         passhash = generate_password_hash(password)
+        realname = request.form.get("name")
 
-        db.execute("INSERT INTO users (username, hash) VALUES (:name, :passhash)", name=name, passhash=passhash)
+        db.execute("INSERT INTO users (username, hash, realname) VALUES (:name, :passhash, :realname)", name=name, passhash=passhash, realname=realname)
 
         return redirect("/login")
 
@@ -206,8 +211,122 @@ def register():
 @login_required
 def remove():
     account = request.form.get('account')
+    rows = db.execute('SELECT * FROM accounts WHERE userid = :userid AND name = :account', userid=session['user_id'], account=account)
+    accountid = rows[0]['id']
     db.execute('DELETE FROM "accounts" WHERE userid = :userid AND name = :account', userid=session['user_id'], account=account)
+    db.execute('DELETE FROM "history" WHERE accountid = :accountid', accountid=accountid)
     return redirect("/accounts")
+
+
+@app.route("/reports")
+@login_required
+def reports():
+    dates = []
+    values = []
+    data = []
+
+    user_id = session['user_id']
+
+    # Get all accounts that belong to the user
+    accounts = db.execute("SELECT * FROM accounts WHERE userid=:user_id", user_id=user_id)
+
+    # For each account, get the history associated with the account id
+    for account in accounts:
+        history = db.execute("SELECT * FROM history WHERE accountid=:accountid", accountid=account['id'])
+
+        # For each row in the account's history, add the date and value to the data
+        for row in history:
+            dates.append(row['date'])
+            values.append(row['value'])
+
+        # Create a new trace with the data from the account
+        newtrace = go.Scatter(
+            x = dates,
+            y = values,
+            name = account['name']
+        )
+
+        dates.clear()
+        values.clear()
+        # Add the new trace to the list of traces
+        data.append(newtrace)
+
+    networth = db.execute("SELECT * FROM networth WHERE userid=:user_id", user_id=user_id)
+    for row in networth:
+        dates.append(row['date'])
+        values.append(row['value'])
+
+    newtrace = go.Scatter(
+        x = dates,
+        y = values,
+        name = "Net Worth"
+    )
+
+    data.append(newtrace)
+
+    file = "templates/accounts-" + str(user_id) + ".html"
+
+    layout = go.Layout(
+        title='Account Values Over Time',
+        xaxis=dict(
+            title='Date',
+            titlefont=dict(
+                family='Arial, sans-serif',
+                size=18,
+                color='#7f7f7f'
+            )
+        ),
+        yaxis=dict(
+            title='Value ($)',
+            titlefont=dict(
+                family='Arial, sans-serif',
+                size=18,
+                color='#7f7f7f'
+            )
+        )
+    )
+
+    # Send data to Plotly
+    fig = go.Figure(data=data, layout=layout)
+    py.offline.plot(fig, filename=file, auto_open=False)
+    # return render_template("accounts-" + str(user_id) + ".html")
+    return render_template("report.html")
+
+
+@app.route("/plot")
+@login_required
+def plot():
+    user_id = session['user_id']
+    graphname = "accounts-" + str(user_id) + ".html"
+    return render_template(graphname)
+
+
+
+@app.route("/update", methods=["GET", "POST"])
+@login_required
+def update():
+    if request.method == "POST":
+        user_id = session['user_id']
+        accounts = db.execute("SELECT * FROM accounts WHERE userid = :user_id", user_id=user_id)
+        networth = 0
+        for account in accounts:
+            if not request.form.get(account['name']):
+                newvalue = account['value']
+            else:
+                newvalue = request.form.get(account['name'])
+            networth += float(newvalue)
+            db.execute(
+                'INSERT INTO "history" ("accountid","value","userid") VALUES (:accountid, :newvalue, :user_id)', accountid=account['id'], newvalue=newvalue, user_id=user_id)
+            db.execute('UPDATE accounts SET value = :newvalue WHERE id = :accountid', newvalue=newvalue, accountid=account['id'])
+        db.execute('INSERT INTO "networth" ("userid","value") VALUES (:user_id, :networth)', user_id=user_id, networth=networth)
+        return redirect("/")
+
+    else:
+        user_id = session['user_id']
+        accounts = db.execute("SELECT * FROM accounts WHERE userid = :user_id", user_id=user_id)
+        return render_template("update.html", accounts=accounts)
+
+
 
 def errorhandler(e):
     """Handle error"""
