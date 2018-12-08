@@ -132,7 +132,7 @@ def login():
 
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          username=request.form.get("username"))
+                          username=request.form.get("username").lower())
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
@@ -180,6 +180,11 @@ def register():
 
         elif request.form.get("password") != request.form.get("confirmation"):
             return apology("passwords do not match", 400)
+
+        username = request.form.get("username").lower()
+        for char in username:
+            if not char.isalnum():
+                return apology("Please only use letters and numbers for username")
 
         rows = db.execute("SELECT * FROM users WHERE username = :username",
                           username=request.form.get("username"))
