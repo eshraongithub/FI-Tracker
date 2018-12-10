@@ -17,7 +17,7 @@
             <tr id="{{row['id']}}">
                 <td>{{ row['date'] }}</td>
                 <td>{{ row['name'] }}</td>
-                {% if row['value'] > 0 %}
+                {% if row['value'] >= 0 %}
                     <td>${{ "{:,.2f}".format(row['value']) }}</td>
                 {% else %}
                     <td>-${{ "{:,.2f}".format(row['value'] * -1) }}</td></td>

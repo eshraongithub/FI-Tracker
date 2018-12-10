@@ -72,10 +72,20 @@ def accounts():
 @login_required
 def add():
     """Adds account that was entered on the accounts page"""
+    if not request.form.get('name'):
+        return apology("Name cannot be empty")
+
     user_id = session['user_id']
     name = request.form.get('name')
     acctype = request.form.get('type')
-    value = request.form.get('value')
+    value = float(request.form.get('value'))
+
+    if not request.form.get('value'):
+        value = 0
+
+    if acctype == 'Loan' or acctype == 'Credit':
+        value = value * -1
+
     db.execute(
         'INSERT INTO "accounts" ("name","userid","value","type")' +
         'VALUES (:name, :user_id, :value, :acctype)', name=name, user_id=session['user_id'], value=value, acctype=acctype)
@@ -328,7 +338,12 @@ def update():
             if not request.form.get(account['name']):
                 newvalue = account['value']
             else:
-                newvalue = request.form.get(account['name'])
+                newvalue = float(request.form.get(account['name']))
+                if account['type'] == 'Credit' or account['type'] == 'Loan':
+                    newvalue = newvalue * -1
+                print("value for " + account['name'] + " is")
+
+            print(newvalue)
             networth += float(newvalue)
             db.execute(
                 'INSERT INTO "history" ("accountid","value","userid") VALUES (:accountid, :newvalue, :user_id)', accountid=account['id'], newvalue=newvalue, user_id=user_id)
