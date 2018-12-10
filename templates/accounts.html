@@ -9,19 +9,19 @@
     <form action="/add" method="post">
         <div class="form-group">
             <label for="type">Account Type</label>
-            <select autofocus class="form-control" name="type"/>
-                <option value="Checking">checking account</option>
-                <option value="Savings">savings account</option>
-                <option value="Retirement">retirement account</option>
-                <option value="Investment">investment account</option>
-                <option value="Loan">loan</option>
-                <option value="Credit">credit card</option>
+            <select class="form-control" name="type" id="type">
+                <option value="Checking" id = "check">checking account</option>
+                <option value="Savings" id = "save">savings account</option>
+                <option value="Retirement" id = "retire">retirement account</option>
+                <option value="Investment" id = "invest">investment account</option>
+                <option value="Loan" id = "loan">loan</option>
+                <option value="Credit" id="credit">credit card</option>
             </select>
         </div>
 
         <div class="form-group">
             <label for="name">Account Name</label>
-            <input name="name" class="form-control" type="text">
+            <input id="name" name="name" class="form-control" type="text">
         </div>
 
         <div class="form-group">
@@ -29,9 +29,9 @@
             <div class="form-group">
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
-                        <span class="input-group-text">$</span>
+                        <span id="value" class="input-group-text">$</span>
                     </div>
-                    <input name="value" class="form-control" type="number" step="0.01">
+                    <input name="value" class="form-control" type="number" step="0.01" min="0" max="10000000">
                 </div>
             </div>
         </div>
@@ -45,7 +45,7 @@
     <form action="/remove" method="post">
         <div class="form-group">
             <label for="type">Account Name</label>
-            <select autofocus name="account"class="form-control" id="removed" />
+            <select name="account" class="form-control" id="removed">
                 {% for row in accounts%}
                 <option value="{{ row['name'] }}" >{{ row['name'] }}</option>
                 {% endfor %}
@@ -56,4 +56,26 @@
             <button class="btn btn-danger" type="submit">Remove Account</button>
         </div>
     </form>
+
+    <script>
+        document.getElementById("credit").addEventListener("click", function(){
+            document.getElementById("value").innerHTML = "-$";
+        });
+        document.getElementById("loan").addEventListener("click", function(){
+            document.getElementById("value").innerHTML = "-$";
+        });
+        document.getElementById("check").addEventListener("click", function(){
+            document.getElementById("value").innerHTML = "$";
+        });
+        document.getElementById("save").addEventListener("click", function(){
+            document.getElementById("value").innerHTML = "$";
+        });
+        document.getElementById("invest").addEventListener("click", function(){
+            document.getElementById("value").innerHTML = "$";
+        });
+        document.getElementById("retire").addEventListener("click", function(){
+            document.getElementById("value").innerHTML = "$";
+        });
+
+    </script>
 {% endblock %}

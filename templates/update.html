@@ -14,7 +14,11 @@
                 <div class="form-group">
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
+                            {% if row['type'] == 'Credit' or row['type'] == 'Loan' %}
+                            <span class="input-group-text">-$</span>
+                            {% else %}
                             <span class="input-group-text">$</span>
+                            {% endif %}
                         </div>
                         <input name="{{ row['name'] }}" class="form-control" type="number" step="0.01">
                     </div>
