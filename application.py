@@ -254,7 +254,7 @@ def reports():
             values.append(row['value'])
 
         # Create a new trace with the data from the account
-        newtrace = go.Scatter(
+        newtrace = go.Bar(
             x = dates,
             y = values,
             name = account['name']
@@ -266,14 +266,14 @@ def reports():
 
         # Add the new trace to the list of traces
         data.append(newtrace)
-
+    
     # Add networth trace
     networth = db.execute("SELECT * FROM networth WHERE userid=:user_id", user_id=user_id)
     for row in networth:
         dates.append(row['date'])
         values.append(row['value'])
 
-    newtrace = go.Scatter(
+    newtrace = go.Bar(
         x = dates,
         y = values,
         name = "Net Worth"
