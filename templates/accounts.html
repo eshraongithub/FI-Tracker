@@ -10,12 +10,16 @@
         <div class="form-group">
             <label for="type">Account Type</label>
             <select class="form-control" name="type" id="type">
-                <option value="Checking" id = "check">checking account</option>
-                <option value="Savings" id = "save">savings account</option>
-                <option value="Retirement" id = "retire">retirement account</option>
-                <option value="Investment" id = "invest">investment account</option>
-                <option value="Loan" id = "loan">loan</option>
-                <option value="Credit" id="credit">credit card</option>
+                <option value="Bonds" id = "bonds">Bonds</option>
+                <option value="Checking" id = "check">Checking account</option>
+                <option value="Credit" id="credit">Credit card</option>
+                <option value="Cryptocurrency" id="cryptocurrency">Cryptocurrency</option>
+                <option value="Investment" id = "invest">Investment Account</option>
+                <option value="Loan" id = "loan">Loan</option>
+                <option value="Real Estate" id = "estate">Real Estate</option>
+                <option value="Retirement" id = "retire">Retirement Account</option>
+                <option value="Savings" id = "save">Savings Account</option>
+                <option value="Stocks" id = "stocks">Stocks</option>
             </select>
         </div>
 
@@ -76,6 +80,17 @@
         document.getElementById("retire").addEventListener("click", function(){
             document.getElementById("value").innerHTML = "$";
         });
-
+        document.getElementById("estate").addEventListener("click", function(){
+            document.getElementById("value").innerHTML = "$";
+        });
+        document.getElementById("bonds").addEventListener("click", function(){
+            document.getElementById("value").innerHTML = "$";
+        });
+        document.getElementById("cryptocurrency").addEventListener("click", function(){
+            document.getElementById("value").innerHTML = "$";
+        });
+        document.getElementById("stocks").addEventListener("click", function(){
+            document.getElementById("value").innerHTML = "$";
+        });
     </script>
 {% endblock %}
