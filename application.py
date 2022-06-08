@@ -9,6 +9,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 import datetime
+import pandas as pd
 
 from helpers import apology, login_required, lookup, usd
 
@@ -253,12 +254,15 @@ def reports():
             dates.append(row['date'])
             values.append(row['value'])
 
+        accounts_history = pd.DataFrame({'date': dates, 'account': account['name'], 'value': values})
+        accounts_history_unique = accounts_history.sort_values('date').drop_duplicates(['date', 'account', 'value'], keep='last')
+
         # Create a new trace with the data from the account
-        newtrace = go.Bar(
-            x = dates,
-            y = values,
-            name = account['name']
-        )
+        newtrace = go.Table(header=dict(values=list(accounts_history_unique.columns),
+                fill_color='paleturquoise',
+                align='left'), cells=dict(values=[accounts_history_unique.date, accounts_history_unique.account, accounts_history_unique.value],
+               fill_color='lavender',
+               align='left'))
 
         # Clear data for next account
         dates.clear()
@@ -266,27 +270,13 @@ def reports():
 
         # Add the new trace to the list of traces
         data.append(newtrace)
-    
-    # Add networth trace
-    networth = db.execute("SELECT * FROM networth WHERE userid=:user_id", user_id=user_id)
-    for row in networth:
-        dates.append(row['date'])
-        values.append(row['value'])
-
-    newtrace = go.Bar(
-        x = dates,
-        y = values,
-        name = "Net Worth"
-    )
-
-    data.append(newtrace)
 
     # Generate file name and store in the templates directory
     file = "templates/accounts-" + str(user_id) + ".html"
 
     # Gives parameters for the layout of the graph
     layout = go.Layout(
-        title='Account Values Over Time',
+        title='Account Value Over Time',
         xaxis=dict(
             title='Date',
             titlefont=dict(
