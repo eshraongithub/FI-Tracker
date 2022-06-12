@@ -247,29 +247,105 @@ def reports():
 
     # For each account, get the history associated with the account id
     for account in accounts:
+        
+        
         history = db.execute("SELECT * FROM history WHERE accountid=:accountid", accountid=account['id'])
 
         # For each row in the account's history, add the date and value to the data
         for row in history:
             dates.append(row['date'])
             values.append(row['value'])
-
-        accounts_history = pd.DataFrame({'date': dates, 'account': account['name'], 'value': values})
-        accounts_history_unique = accounts_history.sort_values('date').drop_duplicates(['date', 'account', 'value'], keep='last')
-
-        # Create a new trace with the data from the account
-        newtrace = go.Table(header=dict(values=list(accounts_history_unique.columns),
-                fill_color='paleturquoise',
-                align='left'), cells=dict(values=[accounts_history_unique.date, accounts_history_unique.account, accounts_history_unique.value],
-               fill_color='lavender',
-               align='left'))
-
+            
         # Clear data for next account
-        dates.clear()
-        values.clear()
+        #dates.clear()
+        #values.clear()
 
-        # Add the new trace to the list of traces
-        data.append(newtrace)
+    accounts_history = pd.DataFrame({'date': dates, 'account': account['name'], 'value': values})
+            #accounts_history_unique = accounts_history.sort_values('date').drop_duplicates(['date', 'account', 'value'], keep='last')
+
+    accounts_history['date'] = pd.to_datetime(accounts_history['date'])
+
+    periods=5    
+    cutoff_date = accounts_history["date"].iloc[-1] - pd.Timedelta(days=periods)
+
+    last_5_transactions = accounts_history[accounts_history['date'] > cutoff_date]
+        
+    last_5_transactions_copy = last_5_transactions.copy()
+
+    last_5_transactions_copy.loc[:, 'date'] = pd.to_datetime(last_5_transactions['date']).dt.date
+
+    print(last_5_transactions_copy)
+
+
+        #last_5_transactions_copy.set_index('date', inplace=True)
+        
+        #last_5_transactions_copy['g'] = last_5_transactions_copy.groupby('account')
+        #last_5_transactions_grouped = last_5_transactions_copy.set_index(['g','account']).stack().unstack([1,2])
+        
+        #last_5_transactions_copy.set_index('account', inplace=True)
+
+        
+        #last_5_transactions_pivot = last_5_transactions_copy.pivot_table('value', index='account', columns='date', aggfunc='first').reset_index()
+        
+        
+    last_5_transactions_copy.fillna(0, inplace=True)
+
+    last_5_transactions_copy= last_5_transactions_copy.round(0)
+        
+    m=(last_5_transactions_copy.dtypes=='float')
+
+    last_5_transactions_copy.loc[:,m]=last_5_transactions_copy.loc[:,m].astype(int)
+        
+    df=last_5_transactions_copy
+        
+
+    print(df.columns)
+    print(df.transpose().values.tolist())
+            
+    table_trace = go.Table(header=dict(values=list(df.columns), fill_color='paleturquoise', align='left'), cells=dict(values=df.transpose().values.tolist(), fill_color='lavender', align='left'))
+            
+
+            
+    # Add the new trace to the list of traces
+    data.append(table_trace)
+            
+        #df.rename(columns={df.columns[1]: "value_1"}, inplace = True)
+        
+        #print(df)
+        
+        #column_1= df.iloc[:, 1]
+        #column_2= df.iloc[:, 2]
+        #column_3= df.iloc[:, 3]
+        #column_4= df.iloc[:, 4]
+        #column_5= df.iloc[:, 5]
+
+        # table_trace = go.Table(
+        #     domain=dict(x=[0, 0.5],
+        #                 y=[0, 1.0]),
+        #     columnwidth = [30] + [33, 35, 33],
+        #     columnorder=[0, 1, 2, 3, 4],
+        #     header = dict(values=list(df.columns), fill_color='paleturquoise', align='left'),
+        #     cells = dict(values = [df[k].tolist() for k in
+        #                   ['account', 'value_1', 'value_2']], fill_color='lavender', align='left')
+        # )
+        
+        #table_trace = go.Table(header=dict(values=list(df.columns), cells=dict(values=df.transpose().values.tolist()fill_color='lavender',
+               #align='left'))
+        
+            
+                
+                
+        
+        
+        # table_trace = go.Scatter(
+        #     x = dates,
+        #      y = values,
+        #     name = account['name']
+        # )
+        
+        
+        
+    
 
     # Generate file name and store in the templates directory
     file = "templates/accounts-" + str(user_id) + ".html"
