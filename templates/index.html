@@ -15,6 +15,7 @@
     <table class="table table-hover">
         <tr class="table-info">
             <th>Account</th>
+            <th>Custodian</th>
             <th>Type</th>
             <th>Current Value</th>
         </tr>
@@ -25,6 +26,7 @@
         <tr class="table-success">
         {% endif %}
             <td>{{ row['name'] }}</td>
+            <td>{{ row['custodian'] }}</td>
             <td>{{ row['type'] }}</td>
             {% if row['value'] < 0 %}
             <td>-${{ "{:,.2f}".format(row['value'] * -1) }}</td>
@@ -42,6 +44,7 @@
         {% else %}
         <tr class="table-danger">
             <td>Net Worth</td>
+            <td></td>
             <td></td>
             <td>-${{ "{:,.2f}".format(total * -1)}}</td>
         </tr>

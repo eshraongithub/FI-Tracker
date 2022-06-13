@@ -78,6 +78,7 @@ def add():
 
     user_id = session['user_id']
     name = request.form.get('name')
+    custodian = request.form.get('custodian')
     acctype = request.form.get('type')
     value = float(request.form.get('value'))
 
@@ -88,10 +89,10 @@ def add():
         value = value * -1
 
     db.execute(
-        'INSERT INTO "accounts" ("name","userid","value","type")' +
-        'VALUES (:name, :user_id, :value, :acctype)', name=name, user_id=session['user_id'], value=value, acctype=acctype)
+        'INSERT INTO "accounts" ("name", "custodian","userid","value","type")' +
+        'VALUES (:name, :custodian, :user_id, :value, :acctype)', name=name, custodian=custodian, user_id=session['user_id'], value=value, acctype=acctype)
 
-    newaccount = db.execute('SELECT * FROM accounts WHERE userid = :user_id AND name = :name', user_id=user_id, name=name)
+    newaccount = db.execute('SELECT * FROM accounts WHERE userid = :user_id AND name = :name AND custodian = :custodian', user_id=user_id, name=name, custodian=custodian)
 
     db.execute(
         'INSERT INTO "history" ("accountid","value","userid") ' +
@@ -282,9 +283,8 @@ def reports():
     last_5_transactions_copy = last_5_transactions.copy()
 
     last_5_transactions_copy.loc[:, 'date'] = pd.to_datetime(last_5_transactions['date']).dt.date
-        
+    
     last_5_transactions_pivot = last_5_transactions_copy.pivot_table('value', index='account', columns='date', aggfunc='last').reset_index()
-        
         
     last_5_transactions_pivot.fillna(0, inplace=True)
 
