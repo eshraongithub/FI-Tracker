@@ -78,6 +78,7 @@ def add():
 
     user_id = session['user_id']
     name = request.form.get('name')
+    country = request.form.get('country')
     custodian = request.form.get('custodian')
     acctype = request.form.get('type')
     value = float(request.form.get('value'))
@@ -89,10 +90,10 @@ def add():
         value = value * -1
 
     db.execute(
-        'INSERT INTO "accounts" ("name", "custodian","userid","value","type")' +
-        'VALUES (:name, :custodian, :user_id, :value, :acctype)', name=name, custodian=custodian, user_id=session['user_id'], value=value, acctype=acctype)
+        'INSERT INTO "accounts" ("name", "country", "custodian","userid","value","type")' +
+        'VALUES (:name, :country, :custodian, :user_id, :value, :acctype)', name=name, country=country, custodian=custodian, user_id=session['user_id'], value=value, acctype=acctype)
 
-    newaccount = db.execute('SELECT * FROM accounts WHERE userid = :user_id AND name = :name AND custodian = :custodian', user_id=user_id, name=name, custodian=custodian)
+    newaccount = db.execute('SELECT * FROM accounts WHERE userid = :user_id AND name = :name AND country = :country AND custodian = :custodian', user_id=user_id, name=name, country=country, custodian=custodian)
 
     db.execute(
         'INSERT INTO "history" ("accountid","value","userid") ' +
