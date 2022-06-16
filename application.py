@@ -10,7 +10,7 @@ from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 import datetime
 import pandas as pd
-
+import numpy as np
 from helpers import apology, login_required, lookup, usd
 
 # Configure application
@@ -276,33 +276,52 @@ def reports():
     
     accounts_history['date'] = pd.to_datetime(accounts_history['date'])
 
-    periods=10    
-    cutoff_date = accounts_history["date"].iloc[-1] - pd.Timedelta(days=periods)
+    #print(accounts_history)
 
-    last_5_transactions = accounts_history[accounts_history['date'] > cutoff_date]
+    #periods=5    
+    #cutoff_date = accounts_history["date"].iloc[-1] - pd.Timedelta(days=periods)
+
+    #last_5_transactions = accounts_history[accounts_history['date'] > cutoff_date]
         
-    last_5_transactions_copy = last_5_transactions.copy()
+    #last_5_transactions_copy = last_5_transactions.copy()
 
-    last_5_transactions_copy.loc[:, 'date'] = pd.to_datetime(last_5_transactions['date']).dt.date
+    accounts_history.loc[:, 'date'] = pd.to_datetime(accounts_history['date']).dt.date
     
-    last_5_transactions_pivot = last_5_transactions_copy.pivot_table('value', index='account', columns='date', aggfunc='last').reset_index()
+    accounts_history_pivot = accounts_history.pivot_table('value', index='account', columns='date', aggfunc='last').reset_index()
         
-    last_5_transactions_pivot.fillna(0, inplace=True)
+    accounts_history_pivot.fillna(0, inplace=True)
 
-    last_5_transactions_pivot= last_5_transactions_pivot.round(0)
+    accounts_history_pivot= accounts_history_pivot.round(0)
         
-    m=(last_5_transactions_pivot.dtypes=='float')
+    m=(accounts_history_pivot.dtypes=='float')
 
-    last_5_transactions_pivot.loc[:,m]=last_5_transactions_pivot.loc[:,m].astype(int)
-        
-    df=last_5_transactions_pivot
-        
-            
-    table_trace = go.Table(header=dict(values=list(df.columns), fill_color='paleturquoise', align='left'), cells=dict(values=df.transpose().values.tolist(), fill_color='lavender', align='left'))
-            
-            
+    accounts_history_pivot.loc[:,m]=accounts_history_pivot.loc[:,m].astype(int)
+
+    last_5_entries_pivot= accounts_history_pivot.iloc[:, [0] + [-5, -4, -3, -2, -1]]
+
+    last_5_entries_pivot_copy = last_5_entries_pivot.copy()
+
+    #last_5_entries_pivot_copy.iloc[: , -1] = np.where(last_5_entries_pivot_copy.iloc[: , -1] == 0, last_5_entries_pivot_copy.iloc[: , -2], last_5_entries_pivot_copy.iloc[: , -1])
+
+    last_5_entries_pivot_copy['current value'] = last_5_entries_pivot_copy.replace(0, np.nan).ffill(axis=1).iloc[:, -1].astype(int)
+
+    net_worth= last_5_entries_pivot_copy['current value'].sum()
+
+    #difference= last_5_entries_pivot_copy['current value'] - net_worth
+
+    #print(difference)
+    print(net_worth)
+
+    last_5_entries_pivot_copy['account value %'] = (last_5_entries_pivot_copy['current value'] / net_worth) *100
+
+    last_5_entries_pivot_copy['account value %'] = last_5_entries_pivot_copy['account value %'].round(decimals = 2)
+
+    account_value=last_5_entries_pivot_copy
+
+    table_trace_value= go.Table(header=dict(values=list(account_value.columns), fill_color='paleturquoise', align='left'), cells=dict(values=account_value.transpose().values.tolist(), fill_color='lavender', align='left'))
+
     # Add the new trace to the list of traces
-    data.append(table_trace)
+    data.append(table_trace_value)
         
 
     # Generate file name and store in the templates directory
@@ -331,6 +350,12 @@ def reports():
 
     # Send data to Plotly
     fig = go.Figure(data=data, layout=layout)
+
+    fig.update_layout(
+    autosize=False,
+    width=1250,
+    height=800,)
+
     py.offline.plot(fig, filename=file, auto_open=False)
 
     return render_template("report.html")
