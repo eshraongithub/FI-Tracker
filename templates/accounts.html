@@ -20,6 +20,7 @@
                 <option value="Retirement" id = "retire">Retirement Account</option>
                 <option value="Savings" id = "save">Savings Account</option>
                 <option value="Stocks" id = "stocks">Stocks</option>
+                <option value="Other" id = "other">Other</option>
             </select>
         </div>
 
@@ -269,4 +270,32 @@
             document.getElementById("value").innerHTML = "$";
         });
     </script>
+
+    <h3>Update Accounts</h3>
+    <form action="/update" method="post">
+        <div class="form-group">
+            {% for row in accounts %}
+            <div class="form-group">
+                <label for="type">{{ row['name'] }}</label>
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            {% if row['type'] == 'Credit' or row['type'] == 'Loan' %}
+                            <span class="input-group-text">-$</span>
+                            {% else %}
+                            <span class="input-group-text">$</span>
+                            {% endif %}
+                        </div>
+                        <input name="{{ row['name'] }}" class="form-control" type="number" step="0.01">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            <button class="btn btn-success" type="submit">Update Accounts</button>
+        </div>
+    </form>
+
 {% endblock %}

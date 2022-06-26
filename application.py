@@ -303,7 +303,9 @@ def reports():
 
     #last_5_entries_pivot_copy.iloc[: , -1] = np.where(last_5_entries_pivot_copy.iloc[: , -1] == 0, last_5_entries_pivot_copy.iloc[: , -2], last_5_entries_pivot_copy.iloc[: , -1])
 
-    last_5_entries_pivot_copy['current value'] = last_5_entries_pivot_copy.replace(0, np.nan).ffill(axis=1).iloc[:, -1].astype(int)
+    #last_5_entries_pivot_copy['current value'] = last_5_entries_pivot_copy.replace(0, np.nan).ffill(axis=1).iloc[:, -1].astype(int)
+
+    last_5_entries_pivot_copy['current value'] = last_5_entries_pivot_copy.ffill(axis=1).iloc[:, -1].astype(int)
 
     net_worth= last_5_entries_pivot_copy['current value'].sum()
 
@@ -408,7 +410,7 @@ def update():
     else:
         user_id = session['user_id']
         accounts = db.execute("SELECT * FROM accounts WHERE userid = :user_id", user_id=user_id)
-        return render_template("update.html", accounts=accounts)
+        return render_template("accounts.html", accounts=accounts)
 
 
 
