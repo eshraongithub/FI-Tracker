@@ -19,8 +19,9 @@
             <th>Custodian</th>
             <th>Type</th>
             <th>Current Value</th>
+            <th>Percentage %</th>
         </tr>
-        {% for row in accounts %}
+        {% for row in accounts_w_percentage %}
         {% if row['value'] < 0 %}
         <tr class="table-danger">
         {% else %}
@@ -35,6 +36,7 @@
             {% else %}
             <td>${{ "{:,.2f}".format(row['value']) }}</td>
             {% endif %}
+            <td>{{ row['percentage %'] }}</td>
         </tr>
         {% endfor %}
         {% if total > 0 %}
@@ -44,6 +46,7 @@
             <td></td>
             <td></td>
             <td>${{ total }}</td>
+            <td></td>
         </tr>
         {% else %}
         <tr class="table-danger">
@@ -52,6 +55,7 @@
             <td></td>
             <td></td>
             <td>-${{ "{:,.2f}".format(total * -1)}}</td>
+            <td></td>
         </tr>
         {% endif %}
 

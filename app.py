@@ -53,7 +53,14 @@ def index():
     total = 0
     for row in accounts:
         total += row['value']
-    return render_template("index.html", accounts=accounts, user=user, total=total)
+    
+    accounts_w_percentage = []
+    for item in accounts:
+        temp = item.copy()
+        temp["percentage %"] = round(item["value"] / total * 100, 2)
+        accounts_w_percentage.append(temp)
+
+    return render_template("index.html", user=user, total=total, accounts_w_percentage=accounts_w_percentage)
 
 
 @app.route("/accounts")
